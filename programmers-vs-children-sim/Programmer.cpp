@@ -11,11 +11,13 @@
 Programmer::Programmer(int x, int y) {
     this->xpos = x;
     this->ypos = y;
+    this->since = 0;
+    this->convert = 0;
 }
 
 void Programmer::move(int x, int y) {
-    this->xpos = x;
-    this->ypos = y;
+    this->xpos += x;
+    this->ypos += y;
 }
 
 int Programmer::getXPos() {
@@ -24,4 +26,16 @@ int Programmer::getXPos() {
 
 int Programmer::getYPos() {
     return this->ypos;
+}
+
+int Programmer::getSince() {
+    return this->since;
+}
+
+void Programmer::setSince() {
+    this->since = 0;
+}
+
+void Programmer::incSince() {
+    this->since++;
 }

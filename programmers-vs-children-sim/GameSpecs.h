@@ -5,9 +5,9 @@
 const int GRIDSIZE = 20; // size of the square grid
 const int CHILD_STARTCOUNT = 100; // inital Child count
 const int PROGRAMMER_STARTCOUNT = 5; //initial Programmer count
-const int HUMAN_BREED = 3; // steps until a Child duplicates
-const int ZOMBIE_BREED = 8; // steps until an Programmer duplicates
-const int ZOMBIE_STARVE = 3; // steps until a Programmer gets fired and reverts to a Child
+const int CHILD_TEENMOM = 3; // steps until a Child duplicates
+const int PROGRAMMER_CONVERT = 8; // steps until an Programmer duplicates
+const int PROGRAMMER_LOSEJOB = 3; // steps until a Programmer gets fired and reverts to a Child
 const char CHILD_CH = 67; // ascii `C` for Child
 const char SPACE_CH = 32; // " " ascii space
 const char PROGRAMMER_CH = 80;// ascii `P` for Programmer
