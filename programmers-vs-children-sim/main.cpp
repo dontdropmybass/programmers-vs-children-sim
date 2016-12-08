@@ -9,12 +9,16 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <time.h>
 #include <unistd.h>
 #include <vector>
 #include "GameSpecs.h"
 #include "Human.hpp"
 #include "Child.hpp"
 #include "Programmer.hpp"
+
+#define _getch() std::system("read -n1 -p 'Press any key...\n' key");
 
 void clear() {
     for (int n = 0; n < 10; n++) printf( "\n\n\n\n\n\n\n\n\n\n" );
@@ -32,7 +36,10 @@ Child* checkIfChild(int x, int y, std::vector<Human*> * city) {
 }
 
 void childTurn(std::vector<Human*> * city) {
-    std::cout<<"childTurn"<<std::endl;
+    std::vector<Human*> city2;
+    for (Human* human : *city) {
+        city2.push_back(human);
+    }
     for (Human* human : *city) {
         if (!dynamic_cast<Child*>(human)) {
             continue;
@@ -51,7 +58,8 @@ void childTurn(std::vector<Human*> * city) {
                 if (human->getXPos()+x != subhuman->getXPos() || human->getYPos()+y != subhuman->getYPos()) {
                     b = false;
                 }
-                if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE) {
+                if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE ||
+                    human->getXPos()+x < 0 || human->getYPos()+y < 0) {
                     b = true;
                 }
             }
@@ -66,8 +74,12 @@ void childTurn(std::vector<Human*> * city) {
                     for (Human* subhuman : *city) {
                         if (subhuman->getXPos()!=human->getXPos()+x ||
                             subhuman->getYPos()!=human->getYPos()+y) {
+                            if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE ||
+                                human->getXPos()+x < 0 || human->getYPos()+y < 0) {
+                                goto ok;
+                            }
                             Child* child = new Child(human->getXPos()+x,human->getYPos()+y);
-                            city->insert(city->begin(), child);
+                            city2.insert(city2.begin(), child);
                             goto ok;
                         }
                     }
@@ -80,10 +92,17 @@ void childTurn(std::vector<Human*> * city) {
     ok:
         int sadfghooiugfhchvjbjiouiytcgvhjbj = 0;
     }
+    city->clear();
+    for (Human* human : city2) {
+        city->push_back(human);
+    }
 }
 
 void programmerTurn(std::vector<Human*> * city) {
-    std::cout<<"programmerTurn"<<std::endl;
+    std::vector<Human*> city2;
+    for (Human* human : *city) {
+        city2.push_back(human);
+    }
     for (Human* human : *city) {
         if (!dynamic_cast<Programmer*>(human)) {
             continue;
@@ -98,10 +117,11 @@ void programmerTurn(std::vector<Human*> * city) {
             for (y = -1; y <= 1; y++) {
                 if (checkIfChild(human->getXPos()+x, human->getYPos()+y, city) != NULL) {
                     Child* child = checkIfChild(human->getXPos()+x, human->getYPos()+y, city);
-                    auto it = std::find(city->begin(), city->end(), child);
-                    if (it != city->end()) city->erase(it);
+                    auto it = std::find(city2.begin(), city2.end(), child);
+                    if (it != city2.end()) city2.erase(it);
                     b = false;
                     human->setSince();
+//                    printf("Om nom\n");
                     goto s;
                 }
             }
@@ -117,7 +137,8 @@ void programmerTurn(std::vector<Human*> * city) {
                 if (human->getXPos()+x != subhuman->getXPos() || human->getYPos()+y != subhuman->getYPos()) {
                     b = false;
                 }
-                if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE) {
+                if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE ||
+                    human->getXPos()+x < 0 || human->getYPos()+y < 0) {
                     b = true;
                 }
             }
@@ -133,9 +154,9 @@ void programmerTurn(std::vector<Human*> * city) {
                     if (checkIfChild(human->getXPos()+x, human->getYPos()+y, city) != NULL) {
                         Child* child = checkIfChild(human->getXPos()+x, human->getYPos()+y, city);
                         Programmer* programmer = new Programmer(child->getXPos(),child->getYPos());
-                        auto it = std::find(city->begin(), city->end(), child);
-                        if (it != city->end()) city->erase(it);
-                        city->insert(city->begin(), programmer);
+                        auto it = std::find(city2.begin(), city2.end(), child);
+                        if (it != city2.end()) city2.erase(it);
+                        city2.insert(city2.begin(), programmer);
                         human->convert = 0;
                         goto lol;
                     }
@@ -149,10 +170,14 @@ void programmerTurn(std::vector<Human*> * city) {
         // if you haven't eaten any children in a while, lose your job and become a child
         if (human->getSince()>=PROGRAMMER_LOSEJOB) {
             Child* child = new Child(human->getXPos(), human->getYPos());
-            auto it = std::find(city->begin(), city->end(), human);
-            if (it != city->end()) city->erase(it);
-            city->insert(city->begin(), child);
+            auto it = std::find(city2.begin(), city2.end(), human);
+            if (it != city2.end()) city2.erase(it);
+            city2.insert(city2.begin(), child);
         }
+    }
+    city->clear();
+    for (Human* human : city2) {
+        city->push_back(human);
     }
 }
 
@@ -162,17 +187,22 @@ void printCity(std::vector<Human*> * city) {
     for (int x = 0; x < GRIDSIZE; x++) {
         for (int y = 0; y < GRIDSIZE; y++) {
             char c = (char) SPACE_CH;
+            const char* color = DEFAULT_COLOR;
             for (int i = 0; i < city->size(); i++) {
                 if (city->at(i)->getXPos()==x&&city->at(i)->getYPos()==y) {
                     if (dynamic_cast<Child*>(city->at(i))) {
                         c = (char) CHILD_CH;
+                        color = CHILD_COLOR;
                     }
                     else if (dynamic_cast<Programmer*>(city->at(i))) {
                         c = (char) PROGRAMMER_CH;
+                        color = PROGRAMMER_COLOR;
                     }
                 }
             }
             printf("|");
+//            std::cout << color << c;
+//            std::cout << DEFAULT_COLOR;
             std::cout << c;
         }
         printf("|\n");
@@ -188,11 +218,13 @@ int main() {
     int numChildren = 0;
     int numProgrammers = 0;
     
+    srand((int)time(NULL));
+    
     while (numChildren < CHILD_STARTCOUNT) {
         bool b = true;
         int x = rand() % GRIDSIZE;
         int y = rand() % GRIDSIZE;
-        for (int i = 0; i < city.size(); i++) {
+        for (int i = 0; i < city.size() && b; i++) {
             Human* human = city.at(i);
             if (human->getXPos()==x&&human->getYPos()==y) b = false;
         }
@@ -207,7 +239,7 @@ int main() {
         bool b = true;
         int x = rand() % GRIDSIZE;
         int y = rand() % GRIDSIZE;
-        for (int i = 0; i < city.size(); i++) {
+        for (int i = 0; i < city.size() && b; i++) {
             Human* human = city.at(i);
             if (human->getXPos()==x&&human->getYPos()==y) b = false;
         }
@@ -222,9 +254,44 @@ int main() {
         programmerTurn(&city);
         childTurn(&city);
         printCity(&city);
-        usleep(/*1000**/PAUSE_MICROSECONDS);
+        numProgrammers = 0;
+        numChildren = 0;
+        for (Human* human : city) {
+            if (dynamic_cast<Programmer*>(human)) {
+                numProgrammers++;
+            }
+            else if (dynamic_cast<Child*>(human)) {
+                numChildren++;
+            }
+        }
+        std::cout << "Turn: " << i+1 << std::endl;
+        std::cout << "Programmers: " << numProgrammers << std::endl;
+        std::cout << "Children: " << numChildren << std::endl;
+        usleep(PAUSE_MICROSECONDS);
         clear();
+        if (numChildren + numProgrammers >= GRIDSIZE*GRIDSIZE) {
+            printf("All these people caused global warming.\nThe ice caps melted and drowned everybody.\nI hope you're happy. Game over.\n");
+            goto end;
+        }
+        else if (numChildren || numProgrammers) {
+            if (!numChildren) {
+                printf("Programmers have converted all children into programmers. Game over.\n");
+                goto end;
+            }
+            else if (!numProgrammers) {
+                printf("All programmers have reverted to child state. Game over.\n");
+                goto end;
+            }
+        }
+        else {
+            printf("Everybody's dead, you killed them, didn't you?\n");
+            goto end;
+        }
+        
     }
+    std::cout << ITERATIONS << " turns have passed and there is no winner. Game over." << std::endl;
+end:
+    _getch();
     
     return 0;
 }
