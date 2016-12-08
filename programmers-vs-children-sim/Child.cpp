@@ -15,6 +15,7 @@ Child::Child(int x, int y) {
     this->convert = 0;
 }
 
+// move the number of spaces in whatever direction it tells you
 void Child::move(int x, int y) {
     this->xpos += x;
     this->ypos += y;
@@ -28,14 +29,17 @@ int Child::getYPos() {
     return this->ypos;
 }
 
+// get how long it's been since you've had a child
 int Child::getSince() {
     return this->since;
 }
 
+// reset the teen mom counter to 0
 void Child::setSince() {
     this->since = 0;
 }
 
+// add 1 to the teen mom counter
 void Child::incSince() {
     this->since++;
 }

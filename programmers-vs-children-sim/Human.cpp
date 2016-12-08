@@ -10,5 +10,5 @@
 #include "Human.hpp"
 
 Human::Human() {
-    
+    // default empty constructor
 }

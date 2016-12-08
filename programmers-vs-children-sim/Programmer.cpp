@@ -15,6 +15,7 @@ Programmer::Programmer(int x, int y) {
     this->convert = 0;
 }
 
+// move the number of spaces in whatever direction it tells you
 void Programmer::move(int x, int y) {
     this->xpos += x;
     this->ypos += y;
@@ -28,14 +29,17 @@ int Programmer::getYPos() {
     return this->ypos;
 }
 
+// see how long it's been since you've made a child cry
 int Programmer::getSince() {
     return this->since;
 }
 
+// reset the make child cry counter to 0
 void Programmer::setSince() {
     this->since = 0;
 }
 
+// add one to the make child cry counter
 void Programmer::incSince() {
     this->since++;
 }

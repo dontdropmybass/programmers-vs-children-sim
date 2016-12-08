@@ -19,11 +19,12 @@
 #include "Programmer.hpp"
 
 #define _getch() std::system("read -n1 -p 'Press any key...\n' key");
-
+// clears the screen
 void clear() {
     for (int n = 0; n < 10; n++) printf( "\n\n\n\n\n\n\n\n\n\n" );
 }
 
+// asks all humans in city if they're children, and if they're in the position (X,Y)
 Child* checkIfChild(int x, int y, std::vector<Human*> * city) {
     for (Human* human : *city) {
         if (human->getXPos()==x&&human->getYPos()==y) {
@@ -35,6 +36,7 @@ Child* checkIfChild(int x, int y, std::vector<Human*> * city) {
     return NULL;
 }
 
+// let the children do what they're supposed to
 void childTurn(std::vector<Human*> * city) {
     std::vector<Human*> city2;
     for (Human* human : *city) {
@@ -58,6 +60,7 @@ void childTurn(std::vector<Human*> * city) {
                 if (human->getXPos()+x != subhuman->getXPos() || human->getYPos()+y != subhuman->getYPos()) {
                     b = false;
                 }
+                // make sure the movement won't be outside the city
                 if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE ||
                     human->getXPos()+x < 0 || human->getYPos()+y < 0) {
                     b = true;
@@ -74,6 +77,7 @@ void childTurn(std::vector<Human*> * city) {
                     for (Human* subhuman : *city) {
                         if (subhuman->getXPos()!=human->getXPos()+x ||
                             subhuman->getYPos()!=human->getYPos()+y) {
+                            // make sure the child won't be born outside the city
                             if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE ||
                                 human->getXPos()+x < 0 || human->getYPos()+y < 0) {
                                 goto ok;
@@ -90,7 +94,7 @@ void childTurn(std::vector<Human*> * city) {
             human->incSince();
         }
     ok:
-        int sadfghooiugfhchvjbjiouiytcgvhjbj = 0;
+        int sadfghooiugfhchvjbjiouiytcgvhjbj = 0; // FIXME: horrible hack
     }
     city->clear();
     for (Human* human : city2) {
@@ -98,6 +102,7 @@ void childTurn(std::vector<Human*> * city) {
     }
 }
 
+// let the zombies do what they're supposed to
 void programmerTurn(std::vector<Human*> * city) {
     std::vector<Human*> city2;
     for (Human* human : *city) {
@@ -112,7 +117,7 @@ void programmerTurn(std::vector<Human*> * city) {
         int x = 0;
         int y = 0;
         int tries = 0;
-        // try to eat a child
+        // try to make a child cry
         for (x = -1; x <= 1; x++) {
             for (y = -1; y <= 1; y++) {
                 if (checkIfChild(human->getXPos()+x, human->getYPos()+y, city) != NULL) {
@@ -121,7 +126,6 @@ void programmerTurn(std::vector<Human*> * city) {
                     if (it != city2.end()) city2.erase(it);
                     b = false;
                     human->setSince();
-//                    printf("Om nom\n");
                     goto s;
                 }
             }
@@ -137,6 +141,7 @@ void programmerTurn(std::vector<Human*> * city) {
                 if (human->getXPos()+x != subhuman->getXPos() || human->getYPos()+y != subhuman->getYPos()) {
                     b = false;
                 }
+                // make sure that spot isn't outside the city
                 if (human->getXPos()+x >= GRIDSIZE || human->getYPos()+y >= GRIDSIZE ||
                     human->getXPos()+x < 0 || human->getYPos()+y < 0) {
                     b = true;
@@ -181,19 +186,23 @@ void programmerTurn(std::vector<Human*> * city) {
     }
 }
 
+// print the city grid
 void printCity(std::vector<Human*> * city) {
     for (int i = 0; i < GRIDSIZE; i++) printf("--");
     printf("-\n");
+    // for every x and y coordinate in the city, ask all humans if they're in that spot
     for (int x = 0; x < GRIDSIZE; x++) {
         for (int y = 0; y < GRIDSIZE; y++) {
             char c = (char) SPACE_CH;
             const char* color = DEFAULT_COLOR;
             for (int i = 0; i < city->size(); i++) {
                 if (city->at(i)->getXPos()==x&&city->at(i)->getYPos()==y) {
+                    // if it's a child, put the `C` character
                     if (dynamic_cast<Child*>(city->at(i))) {
                         c = (char) CHILD_CH;
                         color = CHILD_COLOR;
                     }
+                    // if it's a programmer, put the `P` character
                     else if (dynamic_cast<Programmer*>(city->at(i))) {
                         c = (char) PROGRAMMER_CH;
                         color = PROGRAMMER_COLOR;
@@ -201,8 +210,6 @@ void printCity(std::vector<Human*> * city) {
                 }
             }
             printf("|");
-//            std::cout << color << c;
-//            std::cout << DEFAULT_COLOR;
             std::cout << c;
         }
         printf("|\n");
@@ -212,7 +219,6 @@ void printCity(std::vector<Human*> * city) {
 }
 
 int main() {
-//    Human* city[GRIDSIZE*GRIDSIZE];
     std::vector<Human*> city;
     
     int numChildren = 0;
@@ -220,6 +226,7 @@ int main() {
     
     srand((int)time(NULL));
     
+    // generate a bunch of children
     while (numChildren < CHILD_STARTCOUNT) {
         bool b = true;
         int x = rand() % GRIDSIZE;
@@ -235,6 +242,7 @@ int main() {
         }
     }
     
+    // generator a bunch of programmers
     while (numProgrammers < PROGRAMMER_STARTCOUNT) {
         bool b = true;
         int x = rand() % GRIDSIZE;
@@ -250,6 +258,7 @@ int main() {
         }
     }
     
+    // for the length of the game, do turns
     for (int i = 0; i < ITERATIONS; i++) {
         programmerTurn(&city);
         childTurn(&city);
@@ -269,6 +278,7 @@ int main() {
         std::cout << "Children: " << numChildren << std::endl;
         usleep(PAUSE_MICROSECONDS);
         clear();
+        // see if the game's over:
         if (numChildren + numProgrammers >= GRIDSIZE*GRIDSIZE) {
             printf("All these people caused global warming.\nThe ice caps melted and drowned everybody.\nI hope you're happy. Game over.\n");
             goto end;
